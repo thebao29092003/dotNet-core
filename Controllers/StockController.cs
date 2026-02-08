@@ -1,12 +1,10 @@
 ﻿using AutoMapper;
-using coreC_.Data;
 using coreC_.Dtos.Stock;
 using coreC_.Interfaces;
 using coreC_.MappingProfiles;
 using coreC_.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
+
 
 namespace coreC_.Controllers
 {
@@ -14,13 +12,11 @@ namespace coreC_.Controllers
     [ApiController]
     public class StockController : ControllerBase
     {
-        private readonly ApplicationDBContext _context;
-        private readonly IMapper _mapper;
         private readonly IStockRepository _stockRepository;
+        private readonly IMapper _mapper;
 
-        public StockController(ApplicationDBContext context, IMapper mapper, IStockRepository stockRepository)
+        public StockController(IStockRepository stockRepository, IMapper mapper)
         {
-            _context = context;
             _mapper = mapper;
             _stockRepository = stockRepository;
         }
@@ -29,12 +25,10 @@ namespace coreC_.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-
             var stocks = await _stockRepository.GetAllStocksAsync();
+            var stocksDto = _mapper.Map<List<StockDto>>(stocks);
 
-            // map từ list stock lấy từ database sang list stockdto
-            var result = _mapper.Map<List<StockDto>>(stocks);
-            return Ok(result);
+            return Ok(stocksDto);
         }
 
         /*
@@ -53,21 +47,19 @@ namespace coreC_.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
-            // find tìm theo khóa chính
-            // còn firstordefault tìm theo điều kiện (bất kỳ cột nào)
-            var stock =  await _context.Stocks.FindAsync(id);
-           
-
+            var stock = await _stockRepository.GetStockByIdAsync(id);
             if (stock == null)
             {
                 return NotFound();
             }
-            var result = _mapper.Map<StockDto>(stock);
-            return Ok(result);
+            return Ok(_mapper.Map<StockDto>(stock));
+
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] StockRequestDto stockDto) {
+        public async Task<IActionResult> Create([FromBody] StockRequestDto stockDto)
+        {
+
 
             // cái này không cần ID vì trong database mình cấu hình tự động tăng rồi
             // 1. Chuyển đổi (Map) từ DTO sang Entity (Model)
@@ -75,11 +67,10 @@ namespace coreC_.Controllers
             // stockModel là đối tượng có cấu trúc giống hệt bảng trong Database.
             var stockModel = _mapper.Map<Stock>(stockDto);
 
-            // 2. Thêm đối tượng vào bộ theo dõi của Entity Framework
-            await _context.Stocks.AddAsync(stockModel);
+            await _stockRepository.CreateStockAsync(stockModel);
 
-            // 3. Thực thi lưu vào Database (Lúc này lệnh INSERT trong SQL mới chạy)
-            await _context.SaveChangesAsync();
+
+            //return stockModel;
 
             // 4. Trả về kết quả theo chuẩn RESTful API
             // - Trả về mã lỗi 201 (Created).
@@ -100,20 +91,20 @@ namespace coreC_.Controllers
                     Ví dụ: Location: https://localhost:5000/api/stock/15 (trong đó 15 là ID vừa sinh ra).
                 Response Body: Trả về đối tượng JSON của stockModel để Client có thể sử dụng ngay mà không cần gọi thêm lệnh GET.
              */
-            return CreatedAtAction(nameof(GetById), new { id = stockModel.ID  }, stockModel);
+            return CreatedAtAction(nameof(GetById), new { id = stockModel.ID }, stockModel);
         }
 
         [HttpPut]
         [Route("{id}")]
-        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateStockRequestDto updateDto )
-        { 
-            var stockModel = await _context.Stocks.FirstOrDefaultAsync(s => s.ID == id);
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateStockRequestDto updateDto)
+        {
+            var stockModel = await _stockRepository.UpdateStockAsync(id, updateDto);
+
             if (stockModel == null)
             {
                 return NotFound();
             }
-            _mapper.Map(updateDto, stockModel);
-            await _context.SaveChangesAsync();
+
             return Ok(stockModel);
         }
 
@@ -121,14 +112,12 @@ namespace coreC_.Controllers
         [Route("{id}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            var stockModel = await _context.Stocks.FirstOrDefaultAsync(s => s.ID == id);
+            var stockModel = await _stockRepository.DeleteStockAsync(id);
             if (stockModel == null)
             {
                 return NotFound();
             }
-            _context.Stocks.Remove(stockModel);
-            await _context.SaveChangesAsync();
-            return NoContent();
+            return Ok(stockModel);
         }
     }
 }
