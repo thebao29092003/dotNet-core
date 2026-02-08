@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using coreC_.Data;
 using coreC_.Dtos.Stock;
+using coreC_.Interfaces;
 using coreC_.MappingProfiles;
 using coreC_.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace coreC_.Controllers
 {
@@ -14,20 +16,21 @@ namespace coreC_.Controllers
     {
         private readonly ApplicationDBContext _context;
         private readonly IMapper _mapper;
+        private readonly IStockRepository _stockRepository;
 
-        public StockController(ApplicationDBContext context, IMapper mapper)
+        public StockController(ApplicationDBContext context, IMapper mapper, IStockRepository stockRepository)
         {
             _context = context;
             _mapper = mapper;
+            _stockRepository = stockRepository;
         }
 
         // lấy toàn bộ danh sách
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            // nếu đơn giản chỉ lấy dữ liệu từ database về mà không cần theo dõi thay đổi
-            // thì nên dùng AsNoTracking() để tăng hiệu suất
-            var stocks = _context.Stocks.AsNoTracking().ToList();
+
+            var stocks = await _stockRepository.GetAllStocksAsync();
 
             // map từ list stock lấy từ database sang list stockdto
             var result = _mapper.Map<List<StockDto>>(stocks);
@@ -48,9 +51,11 @@ namespace coreC_.Controllers
                 .Find(id): Đây là phương thức của Entity Framework Core để tìm kiếm một bản ghi dựa trên Khóa chính (Primary Key). Nó rất nhanh và hiệu quả cho việc tìm kiếm theo ID.
          */
         [HttpGet("{id}")]
-        public IActionResult GetById([FromRoute] int id)
+        public async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var stock = _context.Stocks.Find(id);
+            // find tìm theo khóa chính
+            // còn firstordefault tìm theo điều kiện (bất kỳ cột nào)
+            var stock =  await _context.Stocks.FindAsync(id);
            
 
             if (stock == null)
@@ -62,7 +67,7 @@ namespace coreC_.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] StockRequestDto stockDto) {
+        public async Task<IActionResult> Create([FromBody] StockRequestDto stockDto) {
 
             // cái này không cần ID vì trong database mình cấu hình tự động tăng rồi
             // 1. Chuyển đổi (Map) từ DTO sang Entity (Model)
@@ -71,10 +76,10 @@ namespace coreC_.Controllers
             var stockModel = _mapper.Map<Stock>(stockDto);
 
             // 2. Thêm đối tượng vào bộ theo dõi của Entity Framework
-            _context.Stocks.Add(stockModel);
+            await _context.Stocks.AddAsync(stockModel);
 
             // 3. Thực thi lưu vào Database (Lúc này lệnh INSERT trong SQL mới chạy)
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             // 4. Trả về kết quả theo chuẩn RESTful API
             // - Trả về mã lỗi 201 (Created).
@@ -96,6 +101,34 @@ namespace coreC_.Controllers
                 Response Body: Trả về đối tượng JSON của stockModel để Client có thể sử dụng ngay mà không cần gọi thêm lệnh GET.
              */
             return CreatedAtAction(nameof(GetById), new { id = stockModel.ID  }, stockModel);
-        } 
+        }
+
+        [HttpPut]
+        [Route("{id}")]
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateStockRequestDto updateDto )
+        { 
+            var stockModel = await _context.Stocks.FirstOrDefaultAsync(s => s.ID == id);
+            if (stockModel == null)
+            {
+                return NotFound();
+            }
+            _mapper.Map(updateDto, stockModel);
+            await _context.SaveChangesAsync();
+            return Ok(stockModel);
+        }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<IActionResult> Delete([FromRoute] int id)
+        {
+            var stockModel = await _context.Stocks.FirstOrDefaultAsync(s => s.ID == id);
+            if (stockModel == null)
+            {
+                return NotFound();
+            }
+            _context.Stocks.Remove(stockModel);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
     }
 }

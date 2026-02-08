@@ -25,6 +25,7 @@ namespace coreC_.MappingProfiles
             // map 2 chiều giữa Stock và StockDto
             CreateMap<Stock, StockDto>().ReverseMap();
             CreateMap<Stock, StockRequestDto>().ReverseMap();
+            CreateMap<Stock, UpdateStockRequestDto>().ReverseMap();
         }
     }
 }

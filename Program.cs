@@ -1,6 +1,8 @@
 ﻿//Dòng này tạo một đối tượng builder để thiết lập cấu hình cho ứng dụng.
 //Nó mặc định tải các cấu hình từ tệp appsettings.json, các biến môi trường, và các tham số dòng lệnh.
 using coreC_.Data;
+using coreC_.Interfaces;
+using coreC_.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -26,6 +28,20 @@ builder.Services.AddDbContext<ApplicationDBContext>(options =>
 }
 
 );
+
+
+/*
+  Trong ASP.NET Core, có 3 loại vòng đời (Lifetimes) khi đăng ký dịch vụ:
+    Transient (Tạm thời): Mỗi khi có ai yêu cầu, hệ thống sẽ tạo một đối tượng mới hoàn toàn. (Dùng xong vứt đi ngay).
+    Scoped (Theo yêu cầu - Phổ biến nhất): Đối tượng được tạo ra một lần duy nhất trong suốt một yêu cầu HTTP (một lần Client gọi API). Tất cả các thành phần trong cùng một Request đó sẽ dùng chung một đối tượng này.
+    Tại sao Repository thường dùng Scoped? Vì nó làm việc với DbContext (kết nối Database). DbContext cũng là Scoped. Việc dùng chung một kết nối trong suốt một yêu cầu giúp đảm bảo an toàn dữ liệu và tối ưu hiệu suất.
+    Singleton (Đơn nhất): Đối tượng chỉ được tạo một lần duy nhất kể từ khi ứng dụng khởi động cho đến khi tắt Server. Tất cả mọi người, mọi Request đều dùng chung một đối tượng đó.
+ */
+
+//Dòng code này là một phần cực kỳ quan trọng trong Dependency Injection (DI) của ASP.NET Core. Nó thực hiện việc "đăng ký" dịch vụ vào hệ thống.
+//Cụ thể, dòng này nói với ứng dụng rằng: "Khi có bất kỳ thành phần nào (như Controller) yêu cầu interface IStockRepository,
+//hãy tạo và đưa cho nó một đối tượng thuộc lớp StockRepository."
+builder.Services.AddScoped<IStockRepository, StockRepository>();
 
 //Sau khi đã đăng ký xong tất cả các dịch vụ cần thiết, lệnh Build() sẽ tạo ra đối tượng app. Đối tượng này dùng để thiết lập các Middleware (phần mềm trung gian).
 var app = builder.Build();
