@@ -2,6 +2,7 @@
 //Nó mặc định tải các cấu hình từ tệp appsettings.json, các biến môi trường, và các tham số dòng lệnh.
 using coreC_.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,9 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Đăng ký AutoMapper và quét các Profile trong cùng Assembly với Program
+builder.Services.AddAutoMapper(typeof(Program));
 
 var connectionString = "Server=localhost;Database=stock;User=root;Password=29092003";
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
