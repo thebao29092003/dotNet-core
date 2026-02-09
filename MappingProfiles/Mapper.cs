@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using coreC_.Dtos.Comment;
 using coreC_.Dtos.Stock;
 using coreC_.Models;
 
@@ -26,6 +27,8 @@ namespace coreC_.MappingProfiles
             CreateMap<Stock, StockDto>().ReverseMap();
             CreateMap<Stock, StockRequestDto>().ReverseMap();
             CreateMap<Stock, UpdateStockRequestDto>().ReverseMap();
+            CreateMap<Comment, CommentDto>().ReverseMap();
+            CreateMap<Comment, CreateCommentDto>().ReverseMap();
         }
     }
 }

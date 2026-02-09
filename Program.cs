@@ -42,6 +42,7 @@ builder.Services.AddDbContext<ApplicationDBContext>(options =>
 //Cụ thể, dòng này nói với ứng dụng rằng: "Khi có bất kỳ thành phần nào (như Controller) yêu cầu interface IStockRepository,
 //hãy tạo và đưa cho nó một đối tượng thuộc lớp StockRepository."
 builder.Services.AddScoped<IStockRepository, StockRepository>();
+builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 
 //Sau khi đã đăng ký xong tất cả các dịch vụ cần thiết, lệnh Build() sẽ tạo ra đối tượng app. Đối tượng này dùng để thiết lập các Middleware (phần mềm trung gian).
 var app = builder.Build();

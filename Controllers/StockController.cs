@@ -31,6 +31,34 @@ namespace coreC_.Controllers
             return Ok(stocksDto);
         }
 
+        // lấy toàn bộ danh sách
+        [HttpGet]
+        [Route("comment")]
+        public async Task<IActionResult> GetAllStockComment()
+        {
+            var stocks = await _stockRepository.GetAllStocksCommentAsync();
+            var stocksDto = _mapper.Map<List<StockDto>>(stocks);
+
+            return Ok(stocksDto);
+        }
+
+        // lấy toàn bộ danh sách
+        [HttpGet]
+        [Route("comment/{id}")]
+        public async Task<IActionResult> GetAllStockCommentByIdStock([FromRoute] int id)
+        {
+            var stocks = await _stockRepository.GetStockCommentByIdAsync(id);
+
+            if (stocks == null)
+            {
+                return NotFound();
+            }
+
+            var stocksDto = _mapper.Map<StockDto>(stocks);
+
+            return Ok(stocksDto);
+        }
+
         /*
          * 1. Attribute [HttpGet("{id}")]
                 [HttpGet]: Chỉ định rằng phương thức này chỉ phản hồi các yêu cầu sử dụng giao thức HTTP GET (dùng để đọc dữ liệu).

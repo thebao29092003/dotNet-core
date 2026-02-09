@@ -28,11 +28,24 @@ namespace coreC_.Repository
 
         }
 
+        public Task<List<Stock>> GetAllStocksCommentAsync()
+        {
+            return _context.Stocks.Include(s => s.Comments).ToListAsync();
+        }
+
         public async Task<Stock?> GetStockByIdAsync(int id)
         {
             // find tìm theo khóa chính
             // còn firstordefault tìm theo điều kiện (bất kỳ cột nào)
             return await _context.Stocks.FindAsync(id);
+        }
+
+        public async Task<Stock?> GetStockCommentByIdAsync(int id)
+        {
+            // find tìm theo khóa chính của Stock kèm comments
+            return await _context.Stocks
+                .Include(s => s.Comments)
+                .FirstOrDefaultAsync(s => s.ID == id);
         }
 
         public async Task<Stock> CreateStockAsync(Stock stock)
@@ -77,8 +90,17 @@ namespace coreC_.Repository
             return stockModel;
         }
 
-
-
-
+        public async Task<bool> StockExistsAsync(int id)
+        {
+            /*
+             * _context.Stocks: Truy cập vào bảng Stocks trong Database.
+                AnyAsync(...):
+                    Any: Có nghĩa là "có bất kỳ cái nào không?". Nó sẽ trả về kiểu boolean (true nếu tìm thấy ít nhất một bản ghi thỏa mãn điều kiện, false nếu không có cái nào).
+                    Async: Đây là phiên bản bất đồng bộ (không chặn luồng xử lý), giống như chúng ta đã thảo luận về async/await.
+                x => x.ID == id: Đây là điều kiện lọc (Lambda Expression). Nó bảo Database tìm bản ghi nào có cột ID bằng với giá trị biến id truyền vào.
+                await: Đợi kết quả trả về từ Database mà không làm treo ứng dụng.
+             */
+            return await _context.Stocks.AnyAsync(x => x.ID == id);
+        }
     }
 }
