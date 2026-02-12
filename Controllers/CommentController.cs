@@ -52,8 +52,33 @@ namespace coreC_.Controllers
 
             var commentModel = _mapper.Map<Comment>(commentDto);
             var comment = await _commentRepository.CreateCommentAsync(commentModel);
-            return CreatedAtAction(nameof(GetById), new {id = comment.Id}, comment);
+            return CreatedAtAction(nameof(GetById), new { id = comment.Id }, comment);
         }
 
+
+        [HttpPut]
+        public async Task<IActionResult> Update([FromBody] UpdateCommentDto update)
+        {
+
+            var comment = await _commentRepository.UpdateCommentAsync(update);
+            if (comment == null)
+            {
+                return NotFound();
+            }
+            return Ok(comment);
+        }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<IActionResult> Delete([FromRoute] int id)
+        {
+            var comment = await _commentRepository.DeleteCommentAsync(id);
+            if (comment == null)
+            {
+                return NotFound();
+            }
+            return Ok(comment);
+        }
     }
+
 }

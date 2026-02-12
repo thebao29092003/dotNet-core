@@ -1,4 +1,5 @@
-﻿using coreC_.Models;
+﻿using coreC_.Dtos.Comment;
+using coreC_.Models;
 
 namespace coreC_.Interfaces
 {
@@ -7,5 +8,7 @@ namespace coreC_.Interfaces
         Task<List<Comment>> GetAllCommentsAsync();
         Task<Comment?> GetByIdAsync(int id);
         Task<Comment> CreateCommentAsync(Comment comment);
+        Task<Comment?> UpdateCommentAsync(UpdateCommentDto updateCommentDto);
+        Task<Comment?> DeleteCommentAsync(int id);
     }
 }

@@ -29,6 +29,7 @@ namespace coreC_.MappingProfiles
             CreateMap<Stock, UpdateStockRequestDto>().ReverseMap();
             CreateMap<Comment, CommentDto>().ReverseMap();
             CreateMap<Comment, CreateCommentDto>().ReverseMap();
+            CreateMap<Comment, UpdateCommentDto>().ReverseMap();
         }
     }
 }
