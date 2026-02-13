@@ -1,4 +1,5 @@
 ﻿using coreC_.Dtos.Stock;
+using coreC_.Helpers;
 using coreC_.Models;
 
 namespace coreC_.Interfaces
@@ -14,5 +15,6 @@ namespace coreC_.Interfaces
         Task<Stock?> UpdateStockAsync(int id, UpdateStockRequestDto updateStock);
         Task<Stock?> DeleteStockAsync(int id);
         Task<bool> StockExistsAsync(int id);
+        Task<List<Stock>> GetAllAsyncSearch(QueryObject query); 
     }
 }

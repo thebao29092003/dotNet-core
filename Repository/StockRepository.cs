@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using coreC_.Data;
 using coreC_.Dtos.Stock;
+using coreC_.Helpers;
 using coreC_.Interfaces;
 using coreC_.Models;
 using Microsoft.EntityFrameworkCore;
@@ -101,6 +102,71 @@ namespace coreC_.Repository
                 await: Đợi kết quả trả về từ Database mà không làm treo ứng dụng.
              */
             return await _context.Stocks.AnyAsync(x => x.ID == id);
+        }
+
+        public async Task<List<Stock>> GetAllAsyncSearch(QueryObject query)
+        {
+            /*
+             * 1. _context.Stocks.AsQueryable()
+                Dòng này cực kỳ quan trọng.
+                    AsQueryable() giúp bạn tạo ra một "truy vấn chờ". Nó chưa hề gọi xuống Database ngay lập tức.
+                    Nó cho phép bạn "cộng dồn" thêm các điều kiện lọc (Where) vào biến stocks trước khi thực thi.
+             */
+            var stocks =  _context.Stocks.AsQueryable();
+
+            // Đoạn code sử dụng hai khối if để kiểm tra xem người dùng có truyền tham số tìm kiếm vào hay không:
+            if (!string.IsNullOrEmpty(query.Symbol))
+            {
+                stocks = stocks.Where(s => s.Symbol.Contains(query.Symbol));
+            }
+
+            if(!string.IsNullOrEmpty(query.CompanyName))
+            {
+                stocks = stocks.Where(s => s.CompanyName.Contains(query.CompanyName));
+            }
+
+            // query.SortBy.Equals("Symbol", ...): Kiểm tra xem giá trị mà người dùng gửi lên trong trường SortBy
+            // có phải là chuỗi "Symbol" hay không (không phân biệt hoa thường).
+            if (!string.IsNullOrEmpty(query.SortBy))
+            {
+                if (query.SortBy.Equals("Symbol", StringComparison.OrdinalIgnoreCase))
+                {
+                    stocks = query.IsDescending 
+                        ? stocks.OrderByDescending(s => s.Symbol) // Nếu IsDescending = true -> Sắp xếp giảm dần
+                        : stocks.OrderBy(s => s.Symbol);   // Nếu IsDescending = false -> Sắp xếp tăng dần
+                }
+                if (query.SortBy.Equals("CompanyName", StringComparison.OrdinalIgnoreCase))
+                {
+                    stocks = query.IsDescending
+                        ? stocks.OrderByDescending(s => s.Symbol) // Nếu IsDescending = true -> Sắp xếp giảm dần
+                        : stocks.OrderBy(s => s.Symbol);   // Nếu IsDescending = false -> Sắp xếp tăng dần
+                }
+            }
+
+            // mặc định không có sắp xếp theo symbol hay companyName thì sắp xếp theo id
+            // bới vì dùng pagination không có sắp xếp thì nó trả về ngẫu nhiễn có thể làm trang 1
+            // và trang 2 trùng nhau làm hỏng đi logic phân trang
+            stocks = query.IsDescending
+                        ? stocks.OrderByDescending(s => s.ID) // Nếu IsDescending = true -> Sắp xếp giảm dần
+                        : stocks.OrderBy(s => s.ID);
+
+            var skipNumber = (query.PageNumber - 1) * query.PageSize;
+
+            /*
+             * 3.  return await stocks.Skip(skipNumber).Take(query.PageSize).ToListAsync()
+                Đây mới là lúc thực thi.
+                    Đến dòng này, Entity Framework mới tổng hợp tất cả các if ở trên thành một câu lệnh SQL duy nhất và gửi xuống Database.
+                    Nếu người dùng không nhập gì cả, nó sẽ chạy: SELECT * FROM Stocks.
+                    Nếu người dùng nhập cả hai, nó sẽ chạy: SELECT * FROM Stocks WHERE Symbol LIKE ... AND CompanyName LIKE .
+
+                skipNumber = (3 - 1) * 10 = 20: Nghĩa là để xem trang 3, chúng ta phải nhảy qua (bỏ qua) 20 bản ghi đầu tiên (của trang 1 và trang 2).
+                .Skip(20): Bảo Database bỏ qua 20 dòng đầu.
+                .Take(10): Bảo Database chỉ lấy đúng 10 dòng tiếp theo sau khi đã nhảy qua 20 dòng kia.
+                 
+                Nếu không có OrderBy, Database có thể trả về thứ tự ngẫu nhiên ở mỗi lần gọi, dẫn đến việc trang 1 và trang 2 có thể chứa các bản ghi trùng nhau, 
+                 làm hỏng logic phân trang của bạn.
+             */
+            return await stocks.Skip(skipNumber).Take(query.PageSize).ToListAsync();
         }
     }
 }

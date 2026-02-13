@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using coreC_.Dtos.Stock;
+using coreC_.Helpers;
 using coreC_.Interfaces;
 using coreC_.MappingProfiles;
 using coreC_.Models;
@@ -154,6 +155,15 @@ namespace coreC_.Controllers
                 return NotFound();
             }
             return Ok(stockModel);
+        }
+
+        [HttpGet]
+        [Route("search")]
+        public async Task<IActionResult> SearchStocks([FromQuery] QueryObject query)
+        {
+            var stocks = await _stockRepository.GetAllAsyncSearch(query);
+            var stocksDto = _mapper.Map<List<StockDto>>(stocks);
+            return Ok(stocksDto);
         }
     }
 }
