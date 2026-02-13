@@ -29,7 +29,7 @@ namespace coreC_.Controllers
         }
 
         [HttpGet]
-        [Route("{id}")]
+        [Route("{id:int}")]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
             var comment = await _commentRepository.GetByIdAsync(id);
@@ -42,7 +42,6 @@ namespace coreC_.Controllers
         }
 
         [HttpPost]
-        // biến trong param(stockId) phải giống trong route("{stockId}")
         public async Task<IActionResult> Create(CreateCommentDto commentDto)
         {
             if (!await _stockRepository.StockExistsAsync(commentDto.StockId))
@@ -59,7 +58,6 @@ namespace coreC_.Controllers
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] UpdateCommentDto update)
         {
-
             var comment = await _commentRepository.UpdateCommentAsync(update);
             if (comment == null)
             {
@@ -69,7 +67,7 @@ namespace coreC_.Controllers
         }
 
         [HttpDelete]
-        [Route("{id}")]
+        [Route("{id:int}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             var comment = await _commentRepository.DeleteCommentAsync(id);

@@ -44,7 +44,7 @@ namespace coreC_.Controllers
 
         // lấy toàn bộ danh sách
         [HttpGet]
-        [Route("comment/{id}")]
+        [Route("comment/{id:int}")]
         public async Task<IActionResult> GetAllStockCommentByIdStock([FromRoute] int id)
         {
             var stocks = await _stockRepository.GetStockCommentByIdAsync(id);
@@ -72,7 +72,7 @@ namespace coreC_.Controllers
                 .Stocks: Truy cập vào bảng Stocks.
                 .Find(id): Đây là phương thức của Entity Framework Core để tìm kiếm một bản ghi dựa trên Khóa chính (Primary Key). Nó rất nhanh và hiệu quả cho việc tìm kiếm theo ID.
          */
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
             var stock = await _stockRepository.GetStockByIdAsync(id);
@@ -87,7 +87,6 @@ namespace coreC_.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] StockRequestDto stockDto)
         {
-
 
             // cái này không cần ID vì trong database mình cấu hình tự động tăng rồi
             // 1. Chuyển đổi (Map) từ DTO sang Entity (Model)
@@ -122,8 +121,17 @@ namespace coreC_.Controllers
             return CreatedAtAction(nameof(GetById), new { id = stockModel.ID }, stockModel);
         }
 
+        /*
+         * Khi bạn viết {id:int}, bạn đang nói với ASP.NET Core rằng: "Chỉ kích hoạt hàm này nếu phần id trên URL là một số nguyên".
+            Trường hợp 1: Bạn gọi GET /api/stock/10
+                10 là số nguyên -> Khớp. Hàm của bạn sẽ được chạy.
+            Trường hợp 2: Bạn gọi GET /api/stock/abc
+                abc không phải số nguyên -> Không khớp.
+                Kết quả: Hệ thống sẽ bỏ qua hàm này và đi tìm các hàm khác. 
+                Nếu không có hàm nào khác khớp, nó trả về lỗi 404 Not Found (không tìm thấy đường dẫn), chứ không phải lỗi 400 (Bad Request).
+         */
         [HttpPut]
-        [Route("{id}")]
+        [Route("{id:int}")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateStockRequestDto updateDto)
         {
             var stockModel = await _stockRepository.UpdateStockAsync(id, updateDto);
@@ -137,7 +145,7 @@ namespace coreC_.Controllers
         }
 
         [HttpDelete]
-        [Route("{id}")]
+        [Route("{id:int}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             var stockModel = await _stockRepository.DeleteStockAsync(id);
