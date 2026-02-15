@@ -4,6 +4,7 @@ using coreC_.Data;
 using coreC_.Interfaces;
 using coreC_.Models;
 using coreC_.Repository;
+using coreC_.Service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -101,6 +102,7 @@ builder.Services.AddAuthentication(options =>
 //hãy tạo và đưa cho nó một đối tượng thuộc lớp StockRepository."
 builder.Services.AddScoped<IStockRepository, StockRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 //Sau khi đã đăng ký xong tất cả các dịch vụ cần thiết, lệnh Build() sẽ tạo ra đối tượng app. Đối tượng này dùng để thiết lập các Middleware (phần mềm trung gian).
 var app = builder.Build();

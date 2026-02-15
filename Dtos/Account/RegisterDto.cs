@@ -10,7 +10,6 @@ namespace coreC_.Dtos.Account
         [EmailAddress]
         public string Email { get; set; }
         [Required]
-
         // không cần validate ở đây vì đã cấu hình trong program.cs
         public string Password { get; set; }
     }
