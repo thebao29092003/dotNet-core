@@ -3,6 +3,7 @@ using coreC_.Interfaces;
 using coreC_.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace coreC_.Controllers
 {
@@ -12,10 +13,16 @@ namespace coreC_.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly ITokenService _tokenService;
-        public AccountController(UserManager<AppUser> userManager, ITokenService tokenService)
-        {
-            _userManager = userManager;
-            _tokenService = tokenService;
+        private readonly SignInManager<AppUser> _signInManager;
+        public AccountController(
+            UserManager<AppUser> userManager,
+            ITokenService tokenService,
+            SignInManager<AppUser> signInManager
+        )
+            {
+                _userManager = userManager;
+                _tokenService = tokenService;
+                _signInManager = signInManager;
         }
 
         [HttpPost("register")]
@@ -48,11 +55,11 @@ namespace coreC_.Controllers
                     {
                         // trả về username, email và token khi đăng kí thành công
                         return Ok(
-                            new NewUserDto 
+                            new NewUserDto
                             {
                                 Username = appUser.UserName,
                                 Email = appUser.Email,
-                                Token = _tokenService.CreateToken(appUser) 
+                                Token = _tokenService.CreateToken(appUser)
                             }
                         );
                     }
@@ -73,6 +80,38 @@ namespace coreC_.Controllers
             {
                 return StatusCode(500, ex.Message);
             }
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+        {
+            /*
+                 _userManager.Users: Truy cập vào danh sách người dùng trong Database.
+                FirstOrDefaultAsync: Tìm người đầu tiên có UserName trùng với tên đăng nhập mà khách hàng gửi lên (loginDto.Username).
+                Lưu ý: Nếu không tìm thấy, biến user sẽ mang giá trị null.
+             */
+            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.UserName == loginDto.Username);
+            if (user == null) return Unauthorized("Invalid username or password");
+
+            /*
+                CheckPasswordSignInAsync: Đây là hàm cực kỳ quan trọng. Nó không so sánh mật khẩu kiểu chữ thường (như if (pass == "123")). Thay vào đó:
+                    Nó lấy mật khẩu người dùng nhập vào.
+                    Dùng thuật toán mã hóa (Hashing) để biến nó thành một chuỗi mã.
+                    So sánh chuỗi mã đó với chuỗi đã lưu trong Database.
+                Tham số false: Đây là lockoutOnFailure. Nếu để là true, sau một số lần nhập sai liên tiếp (thường là 5 lần), tài khoản sẽ bị khóa tạm thời. 
+                Ở đây bạn đang để false (không khóa).
+             */
+            var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
+            if (!result.Succeeded) return Unauthorized("Invalid username or password");
+
+            return Ok(
+                new NewUserDto
+                {
+                    Username = user.UserName,
+                    Email = user.Email,
+                    Token = _tokenService.CreateToken(user)
+                }
+            );
         }
     }
 }

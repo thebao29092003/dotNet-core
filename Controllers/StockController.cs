@@ -4,6 +4,7 @@ using coreC_.Helpers;
 using coreC_.Interfaces;
 using coreC_.MappingProfiles;
 using coreC_.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -24,6 +25,7 @@ namespace coreC_.Controllers
 
         // lấy toàn bộ danh sách
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetAll()
         {
             var stocks = await _stockRepository.GetAllStocksAsync();
