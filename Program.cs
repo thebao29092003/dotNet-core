@@ -2,9 +2,13 @@
 //Nó mặc định tải các cấu hình từ tệp appsettings.json, các biến môi trường, và các tham số dòng lệnh.
 using coreC_.Data;
 using coreC_.Interfaces;
+using coreC_.Models;
 using coreC_.Repository;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +32,60 @@ builder.Services.AddDbContext<ApplicationDBContext>(options =>
 }
 
 );
+
+/*
+    AddIdentity là một Generic Method (Phương thức tổng quát).
+    <AppUser, IdentityRole> là các Type Arguments (Tham số kiểu).
+    Ý nghĩa:
+        Bạn đang nói với hệ thống ASP.NET Core rằng: "Hãy thêm dịch vụ Identity vào, NHƯNG đừng dùng User mặc định. Hãy dùng class AppUser (do tôi tự tạo) làm User, và dùng IdentityRole làm Role."
+        Nếu không có Generics, bạn sẽ phải ép kiểu (casting) rất vất vả và dễ lỗi. Nhờ Generics, trình biên dịch (Compiler) biết chính xác kiểu dữ liệu bạn muốn dùng ngay từ lúc viết code.
+ */
+
+/*
+    * Giải thích: Đây là nơi thiết lập "Luật chơi" cho việc đăng ký và đăng nhập.
+        Các option: Bạn đang ép người dùng phải đặt mật khẩu mạnh (có chữ hoa, chữ thường, số, ký tự đặc biệt).
+        AddEntityFrameworkStores: Đây là sợi dây liên kết. 
+            Nó bảo Identity rằng: "Mọi dữ liệu người dùng hãy lưu xuống Database 
+            thông qua cái ApplicationDBContext đã khai báo ở trên nhé"
+ */
+builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
+{
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireUppercase = true;
+
+    // Yêu cầu mật khẩu phải có ít nhất một ký tự đặc biệt (non-alphanumeric)
+    options.Password.RequireNonAlphanumeric = true;
+
+    // Yêu cầu mật khẩu phải có ít nhất 8 ký tự
+    options.Password.RequiredLength = 8; 
+}).AddEntityFrameworkStores<ApplicationDBContext>();
+
+builder.Services.AddAuthentication(options =>
+{
+    // link giải thích các thuộc tính này để làm gì:
+    // https://www.notion.so/c-c-thu-c-t-nh-options-trong-3082d18e972180ddbfc2dcf8f0c59700?source=copy_link
+    options.DefaultAuthenticateScheme = 
+    options.DefaultChallengeScheme = 
+    options.DefaultForbidScheme = 
+    options.DefaultScheme = 
+    options.DefaultSignInScheme =
+    options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = builder.Configuration["JWT:Issuer"],
+        ValidateAudience = true,
+        ValidAudience = builder.Configuration["JWT:Audience"],
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(
+            System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JWT:SigningKey"])
+        )
+    };
+});
+   
 
 
 /*
@@ -59,6 +117,8 @@ if (app.Environment.IsDevelopment())
 
 //Tự động chuyển hướng các yêu cầu từ HTTP sang HTTPS để tăng tính bảo mật.
 app.UseHttpsRedirection();
+app.UseAuthentication(); // Kích hoạt cơ chế xác thực (Authentication) để kiểm tra danh tính người dùng.
+app.UseAuthorization(); // Kích hoạt cơ chế phân quyền (Authorization) để kiểm tra quyền truy cập của người dùng sau khi đã xác thực.
 
 //Dòng này cực kỳ quan trọng. Nó ánh xạ các yêu cầu HTTP (GET, POST, PUT, DELETE...) đến các phương thức tương ứng trong các lớp Controller mà bạn viết.
 app.MapControllers();
