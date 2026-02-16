@@ -1,4 +1,6 @@
-﻿namespace coreC_.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace coreC_.Models
 {
     /*
         Id: Khóa chính.
@@ -7,6 +9,7 @@
         StockId: Đây là Foreign Key (Khóa ngoại). Nó lưu ID của cổ phiếu mà bình luận này thuộc về. Việc để int? (nullable) có nghĩa là một bình luận có thể không thuộc về cổ phiếu nào (tùy vào logic nghiệp vụ của bạn).
         Stock? Stock: Đây là Navigation Property. Nó cho phép bạn truy cập trực tiếp các thông tin của Stock từ một đối tượng Comment.
      */
+    [Table("Comments")]
     public class Comment
     {
         public int Id { get; set; }

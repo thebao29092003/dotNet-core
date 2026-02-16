@@ -20,6 +20,7 @@ namespace coreC_.Data
 
         public DbSet<Stock> Stocks { get; set; }
         public DbSet<Comment> Comments { get; set; }
+        public DbSet<Portfolio> Portfolios { get; set; }
 
         /*
          * 1. protected override void OnModelCreating
@@ -32,6 +33,23 @@ namespace coreC_.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            // Đoạn code này sử dụng Fluent API trong Entity Framework Core để cấu hình bảng trung gian Portfolio,
+            // nhằm thiết lập mối quan hệ Nhiều - Nhiều (Many-to-Many) giữa hai thực thể là AppUser (Người dùng) và Stock (Cổ phiếu).
+            
+            // Ý nghĩa: Khai báo rằng bảng Portfolio không dùng một cột ID đơn lẻ (như Id) làm khóa chính. Thay vào đó, nó kết hợp 2 cột AppUserId và StockId để tạo thành một khóa chính hỗn hợp.
+            builder.Entity<Portfolio>(x=>x.HasKey(p => new { p.AppUserId, p.StockId }));
+
+            // Dòng này định nghĩa một nửa của mối quan hệ Nhiều-Nhiều. Nó kết nối bảng Portfolio với bảng người dùng.
+            builder.Entity<Portfolio>()
+                .HasOne(p => p.AppUser) // Portfolio có một AppUser
+                .WithMany(u => u.Portfolios)  // Một AppUser có thể có nhiều Portfolio
+                .HasForeignKey(p => p.AppUserId);  // Khóa ngoại là AppUserId
+            // tương tự trên
+            builder.Entity<Portfolio>()
+                .HasOne(p => p.Stock)
+                .WithMany(u => u.Portfolios)
+                .HasForeignKey(p => p.StockId);
 
             /*
              * Khởi tạo danh sách

@@ -47,13 +47,13 @@ namespace coreC_.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "8259aee4-bdb4-44ed-932e-3624733f2592",
+                            Id = "953edc34-9a69-4194-a64c-5675cda73a2a",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "f73787ea-102a-451a-bf36-b61569aaf530",
+                            Id = "eaa8004c-9e16-4149-9f4d-b1f36f09f134",
                             Name = "User",
                             NormalizedName = "USER"
                         });
@@ -252,6 +252,21 @@ namespace coreC_.Migrations
                     b.ToTable("Comments");
                 });
 
+            modelBuilder.Entity("coreC_.Models.Portfolio", b =>
+                {
+                    b.Property<string>("AppUserId")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<int>("StockId")
+                        .HasColumnType("int");
+
+                    b.HasKey("AppUserId", "StockId");
+
+                    b.HasIndex("StockId");
+
+                    b.ToTable("Portfolios");
+                });
+
             modelBuilder.Entity("coreC_.Models.Stock", b =>
                 {
                     b.Property<int>("ID")
@@ -347,9 +362,35 @@ namespace coreC_.Migrations
                     b.Navigation("Stock");
                 });
 
+            modelBuilder.Entity("coreC_.Models.Portfolio", b =>
+                {
+                    b.HasOne("coreC_.Models.AppUser", "AppUser")
+                        .WithMany("Portfolios")
+                        .HasForeignKey("AppUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("coreC_.Models.Stock", "Stock")
+                        .WithMany("Portfolios")
+                        .HasForeignKey("StockId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AppUser");
+
+                    b.Navigation("Stock");
+                });
+
+            modelBuilder.Entity("coreC_.Models.AppUser", b =>
+                {
+                    b.Navigation("Portfolios");
+                });
+
             modelBuilder.Entity("coreC_.Models.Stock", b =>
                 {
                     b.Navigation("Comments");
+
+                    b.Navigation("Portfolios");
                 });
 #pragma warning restore 612, 618
         }

@@ -10,6 +10,7 @@ namespace coreC_.Models
         MarketCap: Vốn hóa thị trường (kiểu long để chứa số rất lớn).
         List<Comment> Comments: Đây là Collection Navigation Property. Nó cho biết một cổ phiếu có thể có nhiều bình luận (mối quan hệ 1-nhiều).
      */
+    [Table("Stocks")]
     public class Stock
     {
         public int ID { get; set; }
@@ -29,5 +30,8 @@ namespace coreC_.Models
         public string Industry { get; set; } = string.Empty;
         public long MarketCap { get; set; }
         public List<Comment> Comments { get; set; } = new List<Comment>();
+        // Đây là mối quan hệ 1-nhiều giữa Stock và Portfolio.
+        // Một cổ phiếu có thể thuộc về nhiều người dùng khác nhau.
+        public List<Portfolio> Portfolios { get; set; } = new List<Portfolio>();
     }
 }
