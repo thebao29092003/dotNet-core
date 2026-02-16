@@ -47,13 +47,13 @@ namespace coreC_.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "953edc34-9a69-4194-a64c-5675cda73a2a",
+                            Id = "146e8302-273f-43e8-8783-24a20cd4d93c",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "eaa8004c-9e16-4149-9f4d-b1f36f09f134",
+                            Id = "6558a193-e93c-48f5-96e5-41bd9f8845ac",
                             Name = "User",
                             NormalizedName = "USER"
                         });
@@ -283,9 +283,6 @@ namespace coreC_.Migrations
                     b.Property<string>("Industry")
                         .IsRequired()
                         .HasColumnType("longtext");
-
-                    b.Property<decimal>("LastDiv")
-                        .HasColumnType("decimal(65,30)");
 
                     b.Property<long>("MarketCap")
                         .HasColumnType("bigint");

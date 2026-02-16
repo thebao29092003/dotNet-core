@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace coreC_.Migrations
 {
     /// <inheritdoc />
-    public partial class portfolioManyToMany : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -83,7 +83,6 @@ namespace coreC_.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Purchase = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Divdend = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    LastDiv = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
                     Industry = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     MarketCap = table.Column<long>(type: "bigint", nullable: false)
@@ -276,8 +275,8 @@ namespace coreC_.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "953edc34-9a69-4194-a64c-5675cda73a2a", null, "Admin", "ADMIN" },
-                    { "eaa8004c-9e16-4149-9f4d-b1f36f09f134", null, "User", "USER" }
+                    { "146e8302-273f-43e8-8783-24a20cd4d93c", null, "Admin", "ADMIN" },
+                    { "6558a193-e93c-48f5-96e5-41bd9f8845ac", null, "User", "USER" }
                 });
 
             migrationBuilder.CreateIndex(
