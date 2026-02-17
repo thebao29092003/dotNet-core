@@ -23,5 +23,7 @@ namespace coreC_.Models
         //Navigation Property: Những thuộc tính như public Stock? Stock không được lưu thành một cột dữ liệu thô trong bảng Comment,
         //mà nó là một "đường dẫn" để Entity Framework tự động thực hiện các câu lệnh JOIN trong SQL nhằm lấy dữ liệu liên quan.
         public Stock? Stock { get; set; }
+        public string AppUserId { get; set; }
+        public AppUser AppUser { get; set; }
     }
 }

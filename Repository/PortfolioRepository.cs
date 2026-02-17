@@ -21,6 +21,18 @@ namespace coreC_.Repository
             return portfolio;
         }
 
+        public async Task<Portfolio?> DeletePortfolio(AppUser appUser, Stock stock)
+        {
+            var portfolio = await _context.Portfolios.FirstOrDefaultAsync(p => p.AppUserId == appUser.Id && p.StockId == stock.ID);
+            if (portfolio != null)
+            {
+                _context.Portfolios.Remove(portfolio);
+                await _context.SaveChangesAsync();
+                return portfolio;
+            }
+            return null;
+        }
+
         public async Task<List<Stock>> GetUserPortfolio(AppUser user)
         {
             // TRONG CÔNG TY CHỖ NÀY MÌNH SẼ DÙNG CHỨ KHÔNG MAP THỦ CÔNG BÊN DƯỚI

@@ -81,5 +81,22 @@ namespace coreC_.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpDelete]
+        [Authorize]
+        public async Task<IActionResult> DeletePortfolio([FromQuery] string symbol)
+        {
+            var username = User.GetUsername();
+            var appUser = await _userManager.FindByNameAsync(username);
+
+            var userPortfolio = await _portfolioRepository.GetUserPortfolio(appUser);
+
+            var filteredStock = userPortfolio.FirstOrDefault(stock => stock.Symbol == symbol.ToUpper());
+            if (filteredStock == null) return NotFound("Stock not found in portfolio");
+
+            var portfolioModel = await _portfolioRepository.DeletePortfolio(appUser, filteredStock);
+            if(portfolioModel == null) return BadRequest("Failed to delete portfolio");
+            return Ok("Xóa thanh công");
+        }
     }
 }
