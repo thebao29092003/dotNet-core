@@ -14,6 +14,13 @@ namespace coreC_.Repository
             _context = context;
         }
 
+        public async Task<Portfolio> createPortfolio(Portfolio portfolio)
+        {
+            await _context.Portfolios.AddAsync(portfolio);
+            await _context.SaveChangesAsync();
+            return portfolio;
+        }
+
         public async Task<List<Stock>> GetUserPortfolio(AppUser user)
         {
             // TRONG CÔNG TY CHỖ NÀY MÌNH SẼ DÙNG CHỨ KHÔNG MAP THỦ CÔNG BÊN DƯỚI

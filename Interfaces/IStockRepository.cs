@@ -16,5 +16,6 @@ namespace coreC_.Interfaces
         Task<Stock?> DeleteStockAsync(int id);
         Task<bool> StockExistsAsync(int id);
         Task<List<Stock>> GetAllAsyncSearch(QueryObject query); 
+        Task<Stock?> GetStockBySymbol(string symbol);
     }
 }

@@ -168,5 +168,10 @@ namespace coreC_.Repository
              */
             return await stocks.Skip(skipNumber).Take(query.PageSize).ToListAsync();
         }
+
+        public async Task<Stock?> GetStockBySymbol(string symbol)
+        {
+            return await _context.Stocks.FirstOrDefaultAsync(s => s.Symbol == symbol);
+        }
     }
 }
